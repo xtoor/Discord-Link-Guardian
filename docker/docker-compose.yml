@@ -1,1 +1,29 @@
+version: '3.8'
 
+services:
+  link-guardian:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: discord-link-guardian
+    restart: unless-stopped
+    volumes:
+      - ../data:/app/data
+      - ../logs:/app/logs
+      - ../configs:/app/configs
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - SEARCH_API_KEY=${SEARCH_API_KEY}
+    networks:
+      - bot-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('discord.com', 443))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  bot-network:
+    driver: bridge
