@@ -1,7 +1,7 @@
 # 🛡️ Discord Link Guardian Bot
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/yourusername/discord-link-guardian/main/assets/banner.png" alt="Discord Link Guardian Banner" width="800">
+  <img src="https://raw.githubusercontent.com/xtoor/discord-link-guardian/main/assets/banner.png" alt="Discord Link Guardian Banner" width="800">
   
   <h3>🔒 Advanced AI-Powered Link Security for Discord Servers</h3>
   
