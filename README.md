@@ -128,7 +128,7 @@ sudo ./installer.sh
 
 ```bash
 # Download and run the installer
-wget https://raw.githubusercontent.com/yourusername/discord-link-guardian/main/installer.sh
+wget https://raw.githubusercontent.com/xtoor/discord-link-guardian/main/installer.sh
 sudo chmod +x installer.sh
 sudo ./installer.sh
 ```
