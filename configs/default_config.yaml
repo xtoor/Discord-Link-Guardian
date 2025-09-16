@@ -1,1 +1,144 @@
+# Discord Link Guardian Bot - Default Configuration
 
+bot:
+  prefix: "!"
+  status: "Protecting your server"
+  embed_color: 0x5865F2
+  
+commands:
+  enabled:
+    - warnings
+    - unmute
+    - linkstats
+    - config
+    - test
+    
+channels:
+  monitor_all: true
+  excluded_channels: []
+  admin_log_channel: "admin-logs"
+  
+moderation:
+  warnings_before_mute: 3
+  mute_duration_days: 15
+  warnings_before_ban: 5
+  warning_expiry_days: 90
+  
+  auto_actions:
+    delete_dangerous_links: true
+    notify_admins: true
+    dm_user_on_warning: true
+    log_all_actions: true
+    
+ai:
+  provider: "openai"  # openai, anthropic, local
+  model: "gpt-4"
+  temperature: 0.3
+  max_tokens: 1000
+  timeout: 30
+  
+  local_settings:
+    host: "localhost"
+    port: 11434
+    model: "llama2"
+    
+security:
+  threat_thresholds:
+    safe: 0.2
+    caution: 0.4
+    suspicious: 0.6
+    danger: 0.8
+    
+  trusted_domains:
+    - google.com
+    - github.com
+    - microsoft.com
+    - apple.com
+    - amazon.com
+    - wikipedia.org
+    - youtube.com
+    - twitter.com
+    - facebook.com
+    - instagram.com
+    - linkedin.com
+    - reddit.com
+    - discord.com
+    - discordapp.com
+    
+  suspicious_tlds:
+    - .tk
+    - .ml
+    - .ga
+    - .cf
+    - .click
+    - .download
+    - .bid
+    
+  suspicious_patterns:
+    - "free-nitro"
+    - "discord-gift"
+    - "steam-wallet"
+    - "account-verification"
+    - "suspended-account"
+    
+analysis:
+  checks_enabled:
+    domain_reputation: true
+    ssl_validation: true
+    domain_age: true
+    url_shortener: true
+    pattern_matching: true
+    http_headers: true
+    ai_content: true
+    web_reputation: true
+    
+  domain_age_thresholds:
+    very_new_days: 30
+    new_days: 90
+    
+  timeout_seconds:
+    http_request: 10
+    ai_analysis: 30
+    total_analysis: 45
+    
+database:
+  path: "data/bot.db"
+  backup_enabled: true
+  backup_interval_hours: 24
+  max_backups: 7
+  
+logging:
+  level: "INFO"
+  file: "logs/bot.log"
+  max_size_mb: 10
+  backup_count: 5
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  discord_webhook:
+    enabled: false
+    url: ""
+    level: "ERROR"
+    
+rate_limiting:
+  max_checks_per_user_per_minute: 10
+  max_checks_per_guild_per_minute: 100
+  cooldown_seconds: 5
+  
+cache:
+  enabled: true
+  ttl_seconds: 3600
+  max_entries: 1000
+  
+metrics:
+  enabled: true
+  port: 8080
+  path: "/metrics"
+  
+  track:
+    - links_analyzed
+    - threats_detected
+    - users_warned
+    - users_muted
+    - users_banned
+    - response_time
+    - api_calls
