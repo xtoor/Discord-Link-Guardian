@@ -1,0 +1,22 @@
+# Docker Compose Override Example
+# Copy to docker-compose.override.yml and customize
+
+version: '3.8'
+
+services:
+  link-guardian:
+    # Development settings
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    
+    # Mount source code for hot reload
+    volumes:
+      - ../src:/app/src
+    
+    # Expose metrics port
+    ports:
+      - "8080:8080"
+    
+    # Development command
+    command: python -m src.bot --debug
