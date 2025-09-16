@@ -1,292 +1,320 @@
 import aiohttp
 import asyncio
-import socket
-import ssl
-import urllib.parse
-from typing import Dict, List, Any
-import dns.resolver
-import whois
-from datetime import datetime, timezone
 import logging
+from typing import Dict, Any, List
+import json
+import os
+from bs4 import BeautifulSoup
+import re
 
 logger = logging.getLogger(__name__)
 
-class LinkAnalyzer:
+class AIAnalyzer:
     def __init__(self, config):
         self.config = config
+        self.ai_provider = config.get('ai.provider', 'openai')
+        self.api_key = config.get(f'ai.{self.ai_provider}_api_key')
+        self.model = config.get('ai.model', 'gpt-4')
         self.session = None
-        self.known_phishing_domains = set()
-        self.trusted_domains = {
-            'google.com', 'github.com', 'microsoft.com', 'apple.com',
-            'amazon.com', 'wikipedia.org', 'youtube.com', 'twitter.com',
-            'facebook.com', 'instagram.com', 'linkedin.com', 'reddit.com'
-        }
         
     async def initialize(self):
-        """Initialize HTTP session and load blacklists"""
-        self.session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=10)
-        )
-        await self.load_blacklists()
+        """Initialize HTTP session"""
+        self.session = aiohttp.ClientSession()
         
-    async def load_blacklists(self):
-        """Load known phishing/malware domain lists"""
-        # Load from various threat intelligence sources
-        sources = [
-            'https://raw.githubusercontent.com/mitchellkrogza/Phishing.Database/master/phishing-domains-ACTIVE.txt',
-            'https://openphish.com/feed.txt'
-        ]
-        
-        for source in sources:
-            try:
-                async with self.session.get(source) as response:
-                    if response.status == 200:
-                        content = await response.text()
-                        domains = set(line.strip() for line in content.split('\n') if line.strip())
-                        self.known_phishing_domains.update(domains)
-            except Exception as e:
-                logger.error(f"Failed to load blacklist from {source}: {e}")
-                
-    async def analyze(self, url: str) -> Dict[str, Any]:
-        """Perform comprehensive link analysis"""
+    async def analyze(self, url: str, basic_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Use AI to analyze the URL and its content"""
         if not self.session:
             await self.initialize()
             
-        parsed = urllib.parse.urlparse(url)
-        domain = parsed.netloc.lower()
-        
-        analysis = {
-            'url': url,
-            'domain': domain,
+        result = {
             'threat_score': 0.0,
             'confidence': 0.0,
             'flags': [],
-            'checks': {}
+            'ai_assessment': {}
         }
         
-        # Run all checks concurrently
-        checks = await asyncio.gather(
-            self.check_domain_reputation(domain),
-            self.check_ssl_certificate(domain),
-            self.check_domain_age(domain),
-            self.check_url_shortener(url),
-            self.check_suspicious_patterns(url),
-            self.check_http_headers(url),
-            return_exceptions=True
-        )
+        # Fetch and analyze page content
+        page_content = await self.fetch_page_content(url)
         
-        # Process results
-        for check in checks:
-            if isinstance(check, Exception):
-                logger.error(f"Check failed: {check}")
-                continue
-            if check:
-                analysis['checks'].update(check)
-                analysis['threat_score'] += check.get('threat_contribution', 0)
-                analysis['flags'].extend(check.get('flags', []))
+        if page_content:
+            # Analyze with AI
+            ai_response = await self.ai_content_analysis(url, page_content, basic_analysis)
+            result.update(ai_response)
+            
+        # Search for reviews and complaints
+        search_results = await self.search_web_reputation(url)
+        if search_results:
+            reputation_analysis = await self.ai_reputation_analysis(url, search_results)
+            result['reputation'] = reputation_analysis
+            
+            # Update threat score based on reputation
+            if reputation_analysis.get('has_complaints', False):
+                result['threat_score'] += 0.4
+                result['flags'].append('Negative reviews/complaints found')
                 
-        # Calculate confidence based on successful checks
-        successful_checks = sum(1 for c in checks if not isinstance(c, Exception))
-        analysis['confidence'] = successful_checks / len(checks)
-        
-        # Normalize threat score
-        analysis['threat_score'] = min(1.0, analysis['threat_score'])
-        
-        return analysis
-        
-    async def check_domain_reputation(self, domain: str) -> Dict[str, Any]:
-        """Check domain against known blacklists"""
-        result = {
-            'domain_reputation': {},
-            'threat_contribution': 0,
-            'flags': []
-        }
-        
-        # Check if domain is in known phishing list
-        if domain in self.known_phishing_domains:
-            result['domain_reputation']['blacklisted'] = True
-            result['threat_contribution'] = 0.8
-            result['flags'].append('Domain is blacklisted')
-            
-        # Check if domain is trusted
-        elif any(trusted in domain for trusted in self.trusted_domains):
-            result['domain_reputation']['trusted'] = True
-            result['threat_contribution'] = -0.3
-            
-        # Check for domain spoofing
-        if self.check_homograph_attack(domain):
-            result['threat_contribution'] += 0.5
-            result['flags'].append('Possible homograph attack detected')
-            
         return result
         
-    async def check_ssl_certificate(self, domain: str) -> Dict[str, Any]:
-        """Check SSL certificate validity"""
-        result = {
-            'ssl_check': {},
-            'threat_contribution': 0,
-            'flags': []
-        }
-        
+    async def fetch_page_content(self, url: str) -> Dict[str, Any]:
+        """Fetch and parse webpage content"""
         try:
-            context = ssl.create_default_context()
-            with socket.create_connection((domain, 443), timeout=5) as sock:
-                with context.wrap_socket(sock, server_hostname=domain) as ssock:
-                    cert = ssock.getpeercert()
+            async with self.session.get(url, timeout=10) as response:
+                if response.status == 200:
+                    html = await response.text()
+                    soup = BeautifulSoup(html, 'html.parser')
                     
-                    # Check certificate validity
-                    not_after = datetime.strptime(cert['notAfter'], '%b %d %H:%M:%S %Y %Z')
-                    if not_after < datetime.now():
-                        result['ssl_check']['expired'] = True
-                        result['threat_contribution'] = 0.3
-                        result['flags'].append('SSL certificate expired')
-                    else:
-                        result['ssl_check']['valid'] = True
+                    # Extract relevant content
+                    content = {
+                        'title': soup.title.string if soup.title else '',
+                        'meta_description': '',
+                        'text': ' '.join(soup.stripped_strings)[:5000],  # Limit text
+                        'forms': len(soup.find_all('form')),
+                        'input_fields': len(soup.find_all('input')),
+                        'scripts': len(soup.find_all('script')),
+                        'external_links': []
+                    }
+                    
+                    # Get meta description
+                    meta_desc = soup.find('meta', attrs={'name': 'description'})
+                    if meta_desc:
+                        content['meta_description'] = meta_desc.get('content', '')
                         
+                    # Get external links
+                    for link in soup.find_all('a', href=True)[:20]:
+                        href = link['href']
+                        if href.startswith('http'):
+                            content['external_links'].append(href)
+                            
+                    return content
+                    
         except Exception as e:
-            result['ssl_check']['error'] = str(e)
-            result['threat_contribution'] = 0.2
-            result['flags'].append('SSL certificate check failed')
+            logger.error(f"Failed to fetch page content: {e}")
             
-        return result
+        return None
         
-    async def check_domain_age(self, domain: str) -> Dict[str, Any]:
-        """Check domain registration age"""
-        result = {
-            'domain_age': {},
-            'threat_contribution': 0,
-            'flags': []
-        }
+    async def ai_content_analysis(
+        self, 
+        url: str, 
+        content: Dict[str, Any], 
+        basic_analysis: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Analyze content using AI"""
+        
+        prompt = f"""
+        Analyze the following webpage for potential scam or phishing indicators.
+        
+        URL: {url}
+        Title: {content.get('title', 'N/A')}
+        Description: {content.get('meta_description', 'N/A')}
+        Number of forms: {content.get('forms', 0)}
+        Number of input fields: {content.get('input_fields', 0)}
+        
+        Basic security analysis:
+        {json.dumps(basic_analysis, indent=2)}
+        
+        Page content excerpt:
+        {content.get('text', '')[:1000]}
+        
+        Please analyze for:
+        1. Phishing indicators (fake login pages, credential harvesting)
+        2. Scam patterns (too good to be true offers, urgency tactics)
+        3. Malware distribution signs
+        4. Legitimate business indicators
+        
+        Respond in JSON format with:
+        {{
+            "is_suspicious": boolean,
+            "threat_level": "low|medium|high",
+            "confidence": float (0-1),
+            "indicators": [list of specific suspicious indicators found],
+            "legitimate_signs": [list of legitimate business indicators],
+            "recommendation": "safe|caution|suspicious|danger"
+        }}
+        """
         
         try:
-            w = whois.whois(domain)
-            if w.creation_date:
-                creation_date = w.creation_date
-                if isinstance(creation_date, list):
-                    creation_date = creation_date[0]
-                    
-                age_days = (datetime.now() - creation_date).days
-                result['domain_age']['days'] = age_days
+            if self.ai_provider == 'openai':
+                response = await self.call_openai(prompt)
+            elif self.ai_provider == 'anthropic':
+                response = await self.call_anthropic(prompt)
+            else:
+                response = await self.call_local_llm(prompt)
                 
-                if age_days < 30:
-                    result['threat_contribution'] = 0.4
-                    result['flags'].append(f'Domain is very new ({age_days} days)')
-                elif age_days < 90:
-                    result['threat_contribution'] = 0.2
-                    result['flags'].append(f'Domain is relatively new ({age_days} days)')
-                    
-        except Exception as e:
-            logger.error(f"Domain age check failed: {e}")
+            # Parse AI response
+            ai_result = json.loads(response)
             
-        return result
+            result = {
+                'threat_score': 0.0,
+                'confidence': ai_result.get('confidence', 0.5),
+                'flags': ai_result.get('indicators', []),
+                'ai_assessment': ai_result
+            }
+            
+            # Calculate threat score
+            if ai_result.get('threat_level') == 'high':
+                result['threat_score'] = 0.8
+            elif ai_result.get('threat_level') == 'medium':
+                result['threat_score'] = 0.5
+            elif ai_result.get('threat_level') == 'low':
+                result['threat_score'] = 0.2
+                
+            return result
+            
+        except Exception as e:
+            logger.error(f"AI content analysis failed: {e}")
+            return {
+                'threat_score': 0.0,
+                'confidence': 0.0,
+                'flags': ['AI analysis unavailable'],
+                'ai_assessment': {}
+            }
+            
+    async def search_web_reputation(self, url: str) -> List[Dict[str, Any]]:
+        """Search for reviews and complaints about the URL"""
+        domain = urllib.parse.urlparse(url).netloc
         
-    async def check_url_shortener(self, url: str) -> Dict[str, Any]:
-        """Check if URL uses shortener service"""
-        result = {
-            'url_shortener': {},
-            'threat_contribution': 0,
-            'flags': []
-        }
-        
-        shorteners = [
-            'bit.ly', 'tinyurl.com', 'goo.gl', 'ow.ly', 't.co',
-            'short.link', 'tiny.cc', 'is.gd', 'soo.gd', 'rb.gy'
+        search_queries = [
+            f'"{domain}" scam OR fraud OR complaint',
+            f'"{domain}" review OR experience',
+            f'is "{domain}" legitimate OR safe'
         ]
         
-        parsed = urllib.parse.urlparse(url)
-        if any(shortener in parsed.netloc for shortener in shorteners):
-            result['url_shortener']['detected'] = True
-            result['threat_contribution'] = 0.3
-            result['flags'].append('URL shortener detected')
-            
-            # Try to resolve the actual URL
+        results = []
+        
+        for query in search_queries:
             try:
-                async with self.session.head(url, allow_redirects=True) as response:
-                    final_url = str(response.url)
-                    result['url_shortener']['resolved'] = final_url
-            except:
-                pass
+                # Use a web search API (you can use SerpAPI, Google Custom Search, etc.)
+                search_results = await self.web_search(query)
+                results.extend(search_results)
+            except Exception as e:
+                logger.error(f"Web search failed: {e}")
                 
-        return result
+        return results[:10]  # Limit to top 10 results
         
-    async def check_suspicious_patterns(self, url: str) -> Dict[str, Any]:
-        """Check for suspicious URL patterns"""
-        result = {
-            'pattern_check': {},
-            'threat_contribution': 0,
-            'flags': []
-        }
+    async def ai_reputation_analysis(
+        self, 
+        url: str, 
+        search_results: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Analyze web reputation using AI"""
         
-        suspicious_patterns = [
-            (r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}', 'IP address instead of domain'),
-            (r'@', 'URL contains @ symbol'),
-            (r'[^\x00-\x7F]+', 'Non-ASCII characters in URL'),
-            (r'(paypal|amazon|google|microsoft|apple|bank)(?!\.com)', 'Possible brand spoofing'),
-            (r'\.tk$|\.ml$|\.ga$|\.cf$', 'Free domain TLD often used in scams'),
-            (r'-{2,}', 'Multiple consecutive hyphens'),
-            (r'\.(zip|rar|exe|scr|bat|cmd|com|pif|vbs|js)$', 'Executable file extension')
-        ]
+        results_summary = "\n".join([
+            f"- {r.get('title', '')}: {r.get('snippet', '')}"
+            for r in search_results
+        ])
         
-        import re
-        for pattern, description in suspicious_patterns:
-            if re.search(pattern, url, re.IGNORECASE):
-                result['pattern_check'][description] = True
-                result['threat_contribution'] += 0.2
-                result['flags'].append(description)
-                
-        return result
+        prompt = f"""
+        Analyze the following search results about {url} to determine its reputation:
         
-    async def check_http_headers(self, url: str) -> Dict[str, Any]:
-        """Check HTTP response headers for suspicious indicators"""
-        result = {
-            'http_headers': {},
-            'threat_contribution': 0,
-            'flags': []
-        }
+        Search Results:
+        {results_summary}
+        
+        Please determine:
+        1. Are there legitimate complaints about this site?
+        2. What is the overall sentiment (positive/negative/mixed)?
+        3. Are there scam reports?
+        4. Is this a known legitimate business?
+        
+        Respond in JSON format with:
+        {{
+            "has_complaints": boolean,
+            "complaint_severity": "none|low|medium|high",
+            "sentiment": "positive|negative|mixed|unknown",
+            "scam_reports": boolean,
+            "is_legitimate_business": boolean,
+            "summary": "brief summary of findings"
+        }}
+        """
         
         try:
-            async with self.session.get(url, allow_redirects=False) as response:
-                headers = response.headers
+            if self.ai_provider == 'openai':
+                response = await self.call_openai(prompt)
+            else:
+                response = await self.call_local_llm(prompt)
                 
-                # Check for suspicious redirects
-                if response.status in [301, 302, 303, 307, 308]:
-                    location = headers.get('Location', '')
-                    if location and not location.startswith('https'):
-                        result['threat_contribution'] += 0.2
-                        result['flags'].append('Redirect to non-HTTPS URL')
-                        
-                # Check security headers
-                security_headers = [
-                    'X-Frame-Options',
-                    'X-Content-Type-Options',
-                    'Content-Security-Policy'
-                ]
-                
-                missing_headers = [h for h in security_headers if h not in headers]
-                if len(missing_headers) > 2:
-                    result['threat_contribution'] += 0.1
-                    result['flags'].append('Missing security headers')
-                    
-        except Exception as e:
-            logger.error(f"HTTP headers check failed: {e}")
+            return json.loads(response)
             
-        return result
-        
-    def check_homograph_attack(self, domain: str) -> bool:
-        """Check for homograph attacks using similar-looking characters"""
-        homographs = {
-            'a': ['а', 'ɑ', '@'],
-            'e': ['е', 'ё', '3'],
-            'o': ['о', '0', 'ο'],
-            'i': ['і', 'l', '1'],
-            'c': ['с', 'ϲ'],
-            'p': ['р', 'ρ'],
-            'x': ['х', '×'],
-            'y': ['у', 'ү'],
-            'n': ['п', 'ո']
+        except Exception as e:
+            logger.error(f"AI reputation analysis failed: {e}")
+            return {}
+            
+    async def call_openai(self, prompt: str) -> str:
+        """Call OpenAI API"""
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
         }
         
-        for char, similars in homographs.items():
-            if any(s in domain for s in similars):
-                return True
-        return False
+        data = {
+            'model': self.model,
+            'messages': [
+                {'role': 'system', 'content': 'You are a security expert analyzing URLs for potential threats.'},
+                {'role': 'user', 'content': prompt}
+            ],
+            'temperature': 0.3,
+            'response_format': {'type': 'json_object'}
+        }
+        
+        async with self.session.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers=headers,
+            json=data
+        ) as response:
+            result = await response.json()
+            return result['choices'][0]['message']['content']
+            
+    async def call_anthropic(self, prompt: str) -> str:
+        """Call Anthropic Claude API"""
+        headers = {
+            'x-api-key': self.api_key,
+            'Content-Type': 'application/json',
+            'anthropic-version': '2023-06-01'
+        }
+        
+        data = {
+            'model': 'claude-3-opus-20240229',
+            'messages': [
+                {'role': 'user', 'content': prompt}
+            ],
+            'max_tokens': 1000
+        }
+        
+        async with self.session.post(
+            'https://api.anthropic.com/v1/messages',
+            headers=headers,
+            json=data
+        ) as response:
+            result = await response.json()
+            return result['content'][0]['text']
+            
+    async def call_local_llm(self, prompt: str) -> str:
+        """Call local LLM (Ollama, LlamaCpp, etc.)"""
+        # Example for Ollama
+        data = {
+            'model': self.config.get('ai.local_model', 'llama2'),
+            'prompt': prompt,
+            'stream': False,
+            'format': 'json'
+        }
+        
+        async with self.session.post(
+            'http://localhost:11434/api/generate',
+            json=data
+        ) as response:
+            result = await response.json()
+            return result['response']
+            
+    async def web_search(self, query: str) -> List[Dict[str, Any]]:
+        """Perform web search (implement with your preferred search API)"""
+        # Example using SerpAPI
+        params = {
+            'q': query,
+            'api_key': self.config.get('search.api_key'),
+            'num': 5
+        }
+        
+        async with self.session.get(
+            'https://serpapi.com/search',
+            params=params
+        ) as response:
+            data = await response.json()
+            return data.get('organic_results', [])
