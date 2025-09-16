@@ -1,0 +1,175 @@
+<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5865F2;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7289DA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5865F2;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Shield Gradient -->
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glow Effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Drop Shadow -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="200" fill="url(#bgGradient)"/>
+  
+  <!-- Grid Pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <rect width="40" height="40" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="200" fill="url(#grid)"/>
+  
+  <!-- Shield Icon -->
+  <g transform="translate(80, 100)">
+    <path d="M 0 -40 L 30 -35 L 40 -10 L 40 20 L 20 45 L 0 50 L -20 45 L -40 20 L -40 -10 L -30 -35 Z" 
+          fill="url(#shieldGradient)" 
+          stroke="white" 
+          stroke-width="2"
+          filter="url(#glow)"/>
+    
+    <!-- Shield Check Mark -->
+    <path d="M -15 5 L -5 15 L 15 -5" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="4" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Main Title -->
+  <text x="400" y="80" 
+        font-family="Arial, sans-serif" 
+        font-size="42" 
+        font-weight="bold" 
+        text-anchor="middle" 
+        fill="white"
+        filter="url(#shadow)">
+    Discord Link Guardian
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="400" y="115" 
+        font-family="Arial, sans-serif" 
+        font-size="18" 
+        text-anchor="middle" 
+        fill="white"
+        opacity="0.9">
+    AI-Powered Security Bot for Discord Servers
+  </text>
+  
+  <!-- Feature Icons -->
+  <g transform="translate(200, 150)">
+    <!-- AI Brain Icon -->
+    <circle cx="0" cy="0" r="18" fill="none" stroke="white" stroke-width="1.5" opacity="0.7"/>
+    <path d="M -8 -5 Q -8 -8, -5 -8 L 5 -8 Q 8 -8, 8 -5 L 8 5 Q 8 8, 5 8 L -5 8 Q -8 8, -8 5 Z" 
+          fill="white" 
+          opacity="0.7"/>
+    <circle cx="-3" cy="-2" r="2" fill="#5865F2"/>
+    <circle cx="3" cy="-2" r="2" fill="#5865F2"/>
+    <path d="M -3 3 L 3 3" stroke="#5865F2" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+  
+  <g transform="translate(300, 150)">
+    <!-- Link Icon -->
+    <path d="M -10 0 L -5 0 M 5 0 L 10 0" 
+          stroke="white" 
+          stroke-width="2" 
+          stroke-linecap="round"
+          opacity="0.7"/>
+    <rect x="-5" y="-4" width="10" height="8" rx="2" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="1.5"
+          opacity="0.7"/>
+  </g>
+  
+  <g transform="translate(400, 150)">
+    <!-- Lock Icon -->
+    <rect x="-8" y="-2" width="16" height="12" rx="2" 
+          fill="white" 
+          opacity="0.7"/>
+    <path d="M -5 -2 L -5 -8 Q -5 -11, -2 -11 L 2 -11 Q 5 -11, 5 -8 L 5 -2" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.7"/>
+    <circle cx="0" cy="4" r="2" fill="#5865F2"/>
+  </g>
+  
+  <g transform="translate(500, 150)">
+    <!-- Shield Check Icon -->
+    <path d="M 0 -12 L 8 -10 L 10 -3 L 10 6 L 5 11 L 0 12 L -5 11 L -10 6 L -10 -3 L -8 -10 Z" 
+          fill="white" 
+          opacity="0.7"/>
+    <path d="M -4 1 L -1 4 L 4 -1" 
+          fill="none" 
+          stroke="#5865F2" 
+          stroke-width="2" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+  
+  <g transform="translate(600, 150)">
+    <!-- Warning Icon -->
+    <path d="M 0 -12 L 10 10 L -10 10 Z" 
+          fill="white" 
+          opacity="0.7"/>
+    <line x1="0" y1="-4" x2="0" y2="2" 
+          stroke="#5865F2" 
+          stroke-width="2" 
+          stroke-linecap="round"/>
+    <circle cx="0" cy="6" r="1.5" fill="#5865F2"/>
+  </g>
+  
+  <!-- Side Decorations -->
+  <g opacity="0.3">
+    <!-- Left side chains -->
+    <path d="M 20 20 Q 40 40, 20 60 T 20 100 T 20 140 T 20 180" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="1" 
+          stroke-dasharray="5,5"/>
+    
+    <!-- Right side chains -->
+    <path d="M 780 20 Q 760 40, 780 60 T 780 100 T 780 140 T 780 180" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="1" 
+          stroke-dasharray="5,5"/>
+  </g>
+  
+  <!-- Version Badge -->
+  <g transform="translate(720, 30)">
+    <rect x="-25" y="-12" width="50" height="24" rx="12" fill="white" opacity="0.9"/>
+    <text x="0" y="5" 
+          font-family="Arial, sans-serif" 
+          font-size="14" 
+          font-weight="bold" 
+          text-anchor="middle" 
+          fill="#5865F2">
+      v1.0
+    </text>
+  </g>
+</svg>
