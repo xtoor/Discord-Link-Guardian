@@ -576,7 +576,7 @@ SOFTWARE.
 <a href="https://discord.gg/ZzJwbFswHz">
   <img src="https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord">
 </a>
-<a href="https://github.com/yourusername/discord-link-guardian/issues">
+<a href="https://github.com/xtoor/discord-link-guardian/issues">
   <img src="https://img.shields.io/badge/GitHub-Issues-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Issues">
 </a>
 <a href="mailto:support@yourdomain.com">
@@ -589,7 +589,7 @@ SOFTWARE.
 - [Discord.py](https://discordpy.readthedocs.io/) - Discord API wrapper
 - [OpenAI](https://openai.com/) - AI analysis capabilities
 - [Docker](https://www.docker.com/) - Containerization platform
-- [Contributors](https://github.com/yourusername/discord-link-guardian/graphs/contributors) - Amazing community
+- [Contributors](https://github.com/xtoor/discord-link-guardian/graphs/contributors) - Amazing community
 
 ---
 
