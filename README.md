@@ -18,10 +18,10 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/github/license/yourusername/discord-link-guardian?style=flat-square&color=green" alt="License">
-    <img src="https://img.shields.io/github/stars/yourusername/discord-link-guardian?style=flat-square&color=yellow" alt="Stars">
-    <img src="https://img.shields.io/github/forks/yourusername/discord-link-guardian?style=flat-square&color=blue" alt="Forks">
-    <img src="https://img.shields.io/github/issues/yourusername/discord-link-guardian?style=flat-square&color=red" alt="Issues">
+    <img src="https://img.shields.io/github/license/xtoor/discord-link-guardian?style=flat-square&color=green" alt="License">
+    <img src="https://img.shields.io/github/stars/xtoor/discord-link-guardian?style=flat-square&color=yellow" alt="Stars">
+    <img src="https://img.shields.io/github/forks/xtoor/discord-link-guardian?style=flat-square&color=blue" alt="Forks">
+    <img src="https://img.shields.io/github/issues/xtoor/discord-link-guardian?style=flat-square&color=red" alt="Issues">
     <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square" alt="PRs Welcome">
     <img src="https://img.shields.io/badge/Ubuntu-Optimized-E95420?style=flat-square&logo=ubuntu&logoColor=white" alt="Ubuntu">
   </p>
