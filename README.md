@@ -6,7 +6,7 @@
   <h3>🔒 Advanced AI-Powered Link Security for Discord Servers</h3>
   
   <p>
-    <strong>Protect your Discord community from phishing, scams, and malicious links with intelligent real-time analysis</strong>
+    <strong>Protect your Discord community from phishing, crypto scams, and malicious links with intelligent real-time analysis</strong>
   </p>
 
   <!-- Badges -->
