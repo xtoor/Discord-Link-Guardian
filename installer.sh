@@ -5,32 +5,25 @@
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
 # Logging
 LOG_FILE="install_$(date +%Y%m%d_%H%M%S).log"
 exec 2> >(tee -a "$LOG_FILE" >&2)
 
 # Functions
 log() {
-    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1" | tee -a "$LOG_FILE"
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
 error() {
-    echo -e "${RED}[ERROR]${NC} $1" | tee -a "$LOG_FILE"
+    echo "[ERROR] $1" | tee -a "$LOG_FILE"
 }
 
 warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1" | tee -a "$LOG_FILE"
+    echo "[WARNING] $1" | tee -a "$LOG_FILE"
 }
 
 info() {
-    echo -e "${BLUE}[INFO]${NC} $1" | tee -a "$LOG_FILE"
+    echo "[INFO] $1" | tee -a "$LOG_FILE"
 }
 
 check_root() {
@@ -62,7 +55,7 @@ check_dependency() {
     local install_cmd=$3
     
     if command -v "$cmd" &> /dev/null; then
-        info "✓ $cmd is already installed"
+        info "$cmd is already installed"
         return 0
     else
         warning "$cmd is not installed"
@@ -82,7 +75,7 @@ install_docker() {
     log "Checking Docker installation..."
     
     if command -v docker &> /dev/null; then
-        info "✓ Docker is already installed"
+        info "Docker is already installed"
         
         # Check if Docker needs updating
         DOCKER_VERSION=$(docker --version | grep -oP '\d+\.\d+\.\d+')
@@ -125,12 +118,12 @@ install_docker() {
         systemctl start docker
         systemctl enable docker
         
-        info "✓ Docker installed successfully"
+        info "Docker installed successfully"
     fi
     
     # Test Docker installation
     if docker run hello-world &>/dev/null; then
-        info "✓ Docker is working correctly"
+        info "Docker is working correctly"
     else
         error "Docker installation test failed"
         exit 1
@@ -141,7 +134,7 @@ install_docker_compose() {
     log "Checking Docker Compose installation..."
     
     if command -v docker-compose &> /dev/null; then
-        info "✓ Docker Compose is already installed"
+        info "Docker Compose is already installed"
         COMPOSE_VERSION=$(docker-compose --version | grep -oP '\d+\.\d+\.\d+')
         info "Current Docker Compose version: $COMPOSE_VERSION"
     else
@@ -154,7 +147,7 @@ install_docker_compose() {
         # Create symlink for compatibility
         ln -sf /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
         
-        info "✓ Docker Compose installed successfully"
+        info "Docker Compose installed successfully"
     fi
 }
 
@@ -282,7 +275,7 @@ security:
     - .cf
 EOF
     
-    info "✓ Configuration complete"
+    info "Configuration complete"
 }
 
 build_docker_image() {
@@ -294,7 +287,7 @@ build_docker_image() {
     docker build -t discord-link-guardian -f docker/Dockerfile .
     
     if [[ $? -eq 0 ]]; then
-        info "✓ Docker image built successfully"
+        info "Docker image built successfully"
     else
         error "Failed to build Docker image"
         exit 1
@@ -314,12 +307,12 @@ test_installation() {
 import sys
 import discord
 from src.bot import LinkGuardianBot
-print('✓ All imports successful')
+print('All imports successful')
 sys.exit(0)
 "
     
     if [[ $? -eq 0 ]]; then
-        info "✓ Installation test passed"
+        info "Installation test passed"
     else
         error "Installation test failed. Check $LOG_FILE for details"
         exit 1
@@ -354,7 +347,7 @@ EOF
         systemctl daemon-reload
         systemctl enable discord-link-guardian.service
         
-        info "✓ Systemd service created and enabled"
+        info "Systemd service created and enabled"
     fi
 }
 
@@ -372,7 +365,7 @@ start_bot() {
         # Check if container is running
         sleep 5
         if docker ps | grep -q discord-link-guardian; then
-            info "✓ Bot is running!"
+            info "Bot is running!"
             info "View logs: docker logs -f discord-link-guardian"
             info "Stop bot: docker-compose -f $INSTALL_DIR/docker/docker-compose.yml down"
         else
@@ -414,7 +407,7 @@ print_summary() {
     echo
     echo "Installation log saved to: $LOG_FILE"
     echo
-    info "✨ Installation complete! ✨"
+    info "Installation complete!"
 }
 
 # Main installation flow
