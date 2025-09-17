@@ -5,37 +5,30 @@
 
 set -e
 
-# Color codes
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m'
-
 # Project name
 PROJECT_NAME="discord-link-guardian"
 
-echo -e "${BLUE}================================================${NC}"
-echo -e "${BLUE}  Discord Link Guardian Bot - Project Creator  ${NC}"
-echo -e "${BLUE}================================================${NC}"
+echo "================================================"
+echo "  Discord Link Guardian Bot - Project Creator  "
+echo "================================================"
 echo
 
 # Ask for project directory
-echo -e "${YELLOW}Where would you like to create the project? [./$PROJECT_NAME]${NC}"
+echo "Where would you like to create the project? [./$PROJECT_NAME]"
 read -r PROJECT_DIR
 PROJECT_DIR=${PROJECT_DIR:-"./$PROJECT_NAME"}
 
 # Create project directory
-echo -e "${GREEN}Creating project directory: $PROJECT_DIR${NC}"
+echo "Creating project directory: $PROJECT_DIR"
 mkdir -p "$PROJECT_DIR"
 cd "$PROJECT_DIR"
 
 # Create directory structure
-echo -e "${GREEN}Creating directory structure...${NC}"
+echo "Creating directory structure..."
 mkdir -p src docker configs data logs scripts docs
 
 # Create main bot file
-echo -e "${GREEN}Creating src/bot.py...${NC}"
+echo "Creating src/bot.py..."
 cat > src/bot.py << 'EOF'
 # Copy the bot.py content from the artifact above
 # This is a placeholder - replace with actual content
@@ -45,7 +38,7 @@ from discord.ext import commands
 EOF
 
 # Create link analyzer
-echo -e "${GREEN}Creating src/link_analyzer.py...${NC}"
+echo "Creating src/link_analyzer.py..."
 cat > src/link_analyzer.py << 'EOF'
 # Copy the link_analyzer.py content from the artifact above
 import aiohttp
@@ -54,7 +47,7 @@ import asyncio
 EOF
 
 # Create AI analyzer
-echo -e "${GREEN}Creating src/ai_analyzer.py...${NC}"
+echo "Creating src/ai_analyzer.py..."
 cat > src/ai_analyzer.py << 'EOF'
 # Copy the ai_analyzer.py content from the artifact above
 import aiohttp
@@ -63,7 +56,7 @@ import asyncio
 EOF
 
 # Create moderation module
-echo -e "${GREEN}Creating src/moderation.py...${NC}"
+echo "Creating src/moderation.py..."
 cat > src/moderation.py << 'EOF'
 # Copy the moderation.py content from the artifact above
 import discord
@@ -72,7 +65,7 @@ from datetime import datetime, timedelta
 EOF
 
 # Create database module
-echo -e "${GREEN}Creating src/database.py...${NC}"
+echo "Creating src/database.py..."
 cat > src/database.py << 'EOF'
 # Copy the database.py content from the artifact above
 import aiosqlite
@@ -81,7 +74,7 @@ import asyncio
 EOF
 
 # Create config module
-echo -e "${GREEN}Creating src/config.py...${NC}"
+echo "Creating src/config.py..."
 cat > src/config.py << 'EOF'
 # Copy the config.py content from the artifact above
 import yaml
@@ -90,7 +83,7 @@ import os
 EOF
 
 # Create Dockerfile
-echo -e "${GREEN}Creating docker/Dockerfile...${NC}"
+echo "Creating docker/Dockerfile..."
 cat > docker/Dockerfile << 'EOF'
 FROM python:3.11-slim
 
@@ -127,7 +120,7 @@ CMD ["python", "-m", "src.bot"]
 EOF
 
 # Create docker-compose.yml
-echo -e "${GREEN}Creating docker/docker-compose.yml...${NC}"
+echo "Creating docker/docker-compose.yml..."
 cat > docker/docker-compose.yml << 'EOF'
 version: '3.8'
 
@@ -161,7 +154,7 @@ networks:
 EOF
 
 # Create requirements.txt
-echo -e "${GREEN}Creating requirements.txt...${NC}"
+echo "Creating requirements.txt..."
 cat > requirements.txt << 'EOF'
 discord.py>=2.3.0
 aiohttp>=3.9.0
@@ -181,7 +174,7 @@ typing-extensions>=4.8.0
 EOF
 
 # Create requirements-dev.txt
-echo -e "${GREEN}Creating requirements-dev.txt...${NC}"
+echo "Creating requirements-dev.txt..."
 cat > requirements-dev.txt << 'EOF'
 # Testing
 pytest>=7.4.0
@@ -213,7 +206,7 @@ line-profiler>=4.1.0
 EOF
 
 # Create .env.example
-echo -e "${GREEN}Creating .env.example...${NC}"
+echo "Creating .env.example..."
 cat > .env.example << 'EOF'
 # Discord Configuration
 DISCORD_TOKEN=your_discord_bot_token_here
@@ -254,7 +247,7 @@ THREAT_THRESHOLD_DANGER=0.8
 EOF
 
 # Create default config
-echo -e "${GREEN}Creating configs/default_config.yaml...${NC}"
+echo "Creating configs/default_config.yaml..."
 cat > configs/default_config.yaml << 'EOF'
 bot:
   prefix: "!"
@@ -307,7 +300,7 @@ logging:
 EOF
 
 # Create .gitignore
-echo -e "${GREEN}Creating .gitignore...${NC}"
+echo "Creating .gitignore..."
 cat > .gitignore << 'EOF'
 # Python
 __pycache__/
@@ -368,7 +361,7 @@ dist/
 EOF
 
 # Create .dockerignore
-echo -e "${GREEN}Creating .dockerignore...${NC}"
+echo "Creating .dockerignore..."
 cat > .dockerignore << 'EOF'
 # Git
 .git
@@ -413,7 +406,7 @@ docs/_build/
 EOF
 
 # Create LICENSE
-echo -e "${GREEN}Creating LICENSE...${NC}"
+echo "Creating LICENSE..."
 cat > LICENSE << 'EOF'
 MIT License
 
@@ -439,7 +432,7 @@ SOFTWARE.
 EOF
 
 # Create README.md (simplified version)
-echo -e "${GREEN}Creating README.md...${NC}"
+echo "Creating README.md..."
 cat > README.md << 'EOF'
 # 🛡️ Discord Link Guardian Bot
 
@@ -465,7 +458,7 @@ MIT License - see LICENSE file for details
 EOF
 
 # Create the installer script (copy from the artifact)
-echo -e "${GREEN}Creating installer.sh...${NC}"
+echo "Creating installer.sh..."
 cat > installer.sh << 'EOF'
 #!/bin/bash
 # Note: Copy the full installer.sh content from the artifact above
@@ -473,7 +466,7 @@ echo "Installer placeholder - replace with actual installer script"
 EOF
 
 # Create update script
-echo -e "${GREEN}Creating scripts/update.sh...${NC}"
+echo "Creating scripts/update.sh..."
 cat > scripts/update.sh << 'EOF'
 #!/bin/bash
 # Discord Link Guardian Bot - Update Script
@@ -531,7 +524,7 @@ echo -e "${GREEN}✓ Bot updated successfully!${NC}"
 EOF
 
 # Create health check script
-echo -e "${GREEN}Creating scripts/health_check.py...${NC}"
+echo "Creating scripts/health_check.py..."
 cat > scripts/health_check.py << 'EOF'
 #!/usr/bin/env python3
 """Health check script for Discord Link Guardian Bot"""
@@ -543,12 +536,12 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 print("Discord Link Guardian Bot - Health Check")
-print("Status: HEALTHY ✓")
+print("Status: HEALTHY")
 sys.exit(0)
 EOF
 
 # Create CONTRIBUTING.md
-echo -e "${GREEN}Creating docs/CONTRIBUTING.md...${NC}"
+echo "Creating docs/CONTRIBUTING.md..."
 cat > docs/CONTRIBUTING.md << 'EOF'
 # Contributing to Discord Link Guardian Bot
 
@@ -573,7 +566,7 @@ Open an issue on GitHub!
 EOF
 
 # Set executable permissions
-echo -e "${GREEN}Setting permissions...${NC}"
+echo "Setting permissions..."
 chmod +x installer.sh
 chmod +x scripts/update.sh
 chmod +x scripts/health_check.py
@@ -583,19 +576,19 @@ touch logs/bot.log
 
 # Final message
 echo
-echo -e "${GREEN}================================================${NC}"
-echo -e "${GREEN}✅ Project created successfully!${NC}"
-echo -e "${GREEN}================================================${NC}"
+echo "================================================"
+echo "Project created successfully!"
+echo "================================================"
 echo
-echo -e "${BLUE}Project location: $PROJECT_DIR${NC}"
+echo "Project location: $PROJECT_DIR"
 echo
-echo -e "${YELLOW}Next steps:${NC}"
-echo -e "1. ${GREEN}cd $PROJECT_DIR${NC}"
-echo -e "2. ${GREEN}cp .env.example .env${NC}"
-echo -e "3. ${GREEN}nano .env${NC} (add your Discord bot token and API keys)"
-echo -e "4. ${GREEN}sudo ./installer.sh${NC} (run the interactive installer)"
+echo "Next steps:"
+echo "1. cd $PROJECT_DIR"
+echo "2. cp .env.example .env"
+echo "3. nano .env (add your Discord bot token and API keys)"
+echo "4. sudo ./installer.sh (run the interactive installer)"
 echo
-echo -e "${BLUE}Note: The source files (bot.py, etc.) need their full content${NC}"
-echo -e "${BLUE}copied from the provided artifacts above.${NC}"
+echo "Note: The source files (bot.py, etc.) need their full content"
+echo "copied from the provided artifacts above."
 echo
-echo -e "${GREEN}Happy bot building! 🤖${NC}"
+echo "Happy bot building!"
