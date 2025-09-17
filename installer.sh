@@ -171,7 +171,7 @@ setup_project() {
     else
         log "Downloading project files from repository..."
         # Clone from your repository
-        git clone https://github.com/yourusername/discord-link-guardian.git "$INSTALL_DIR/temp"
+        git clone https://github.com/xtoor/discord-link-guardian.git "$INSTALL_DIR/temp"
         mv "$INSTALL_DIR/temp/"* "$INSTALL_DIR/"
         rm -rf "$INSTALL_DIR/temp"
     fi
