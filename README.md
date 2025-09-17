@@ -83,7 +83,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/discord-link-guardian.git
+git clone https://github.com/xtoor/discord-link-guardian.git
 cd discord-link-guardian
 
 # Run the interactive installer
